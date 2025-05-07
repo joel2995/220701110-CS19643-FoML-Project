@@ -11,20 +11,73 @@ log_dir = os.path.join(base_dir, 'outputs', 'logs')
 os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, 'selection_log.txt')
 
-# Configure logging
+# Configure logging - File logging remains detailed for debugging
 logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
 file_handler = logging.FileHandler(log_file)
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
 
+# Console handler only shows INFO level messages from main module
+# This filters out warnings from TensorFlow and other libraries
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
+
+# Create a filter to only show messages from the main module and team_selector
+class ModuleFilter(logging.Filter):
+    def filter(self, record):
+        # Always show errors
+        if record.levelno >= logging.ERROR:
+            return True
+            
+        # Always show the team selection summary and related information
+        if "[TEAM SELECTION SUMMARY]" in record.getMessage() or \
+           "Team composition:" in record.getMessage() or \
+           "Players from each team:" in record.getMessage() or \
+           "Total credits used:" in record.getMessage() or \
+           "Final 11:" in record.getMessage() or \
+           "Backups:" in record.getMessage() or \
+           "Captain:" in record.getMessage() or \
+           "Vice-Captain:" in record.getMessage() or \
+           "Final Team (Submission Format)" in record.getMessage():
+            return True
+            
+        # Allow specific initialization messages
+        allowed_messages = [
+            "Initializing TeamSelector",
+            "Loading data files",
+            "Data files loaded and standardized successfully",
+            "Initializing components",
+            "Components initialized successfully",
+            "Predicting the best team",
+            "Starting prediction process",
+            "Loading squad data for match ID"
+        ]
+        for msg in allowed_messages:
+            if msg in record.getMessage():
+                return True
+        return False
+
+# Apply the filter to console output only
+console_handler.addFilter(ModuleFilter())
 
 logger = logging.getLogger()
 logger.handlers = []
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
+
+# Suppress TensorFlow and other library warnings
+import warnings
+warnings.filterwarnings('ignore')
+
+# Suppress TensorFlow logging
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
+try:
+    import tensorflow as tf
+    tf.get_logger().setLevel('ERROR')
+except ImportError:
+    pass
 
 # Add src to sys path for import
 sys.path.append(os.path.join(base_dir, 'src'))

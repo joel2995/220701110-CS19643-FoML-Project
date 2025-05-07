@@ -116,8 +116,8 @@ class StrategyEngine:
                 else:
                     priority_category = 'Low'
                 
-                # Increased weights for Priority (especially for Priority 1)
-                priority_weight = {'High': 30, 'Medium': 15, 'Low': 5}
+                # Reduced weights for Priority (reduced by ~25%)
+                priority_weight = {'High': 22.5, 'Medium': 11.25, 'Low': 3.75}
                 player_df.loc[idx, 'Priority Boost'] = priority_weight.get(priority_category, 0)
             else:
                 player_df.loc[idx, 'Priority Boost'] = 0
@@ -150,15 +150,15 @@ class StrategyEngine:
             else:
                 player_df.loc[idx, 'Matchup Boost'] = 0
 
-        # Calculate final strategic score with enhanced priority weighting
+        # Calculate final strategic score with reduced priority weighting (from 1.5 to 1.25)
         player_df['Strategic Score'] = (
             player_df['Total Points'] +
-            player_df['Form Impact'] +
-            player_df['Conditions Impact'] +
-            player_df['Priority Boost'] * 1.5 +  # Increased weight for Priority Boost
+            player_df['Form Impact'] * 1.25 +  # Increased weight for ML-based form impact
+            player_df['Conditions Impact'] * 1.1 +  # Slightly increased weight for conditions
+            player_df['Priority Boost'] * 1.25 +  # Reduced weight for Priority Boost (from 1.5)
             player_df['Home Boost'] +
             player_df['Toss Boost'] +
-            player_df.get('Matchup Boost', 0)  # Safely get the new column
+            player_df.get('Matchup Boost', 0) * 1.15  # Increased weight for matchup analysis
         )
 
         return player_df

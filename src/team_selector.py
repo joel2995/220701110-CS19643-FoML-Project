@@ -5,7 +5,7 @@ import os
 from recent_form_generator import PlayerPerformanceAnalyzer
 from data_standardizer import DataStandardizer
 from fantasy_point_calculator import calculate_total_points
-from model_predictor import ModelPredictor
+from enhanced_model_predictor import EnhancedModelPredictor
 from strategy_engine import StrategyEngine
 
 # Import the captaincy priority data
@@ -87,7 +87,7 @@ class TeamSelector:
             # Initialize other components
             logging.info("Initializing components...")
             self.performance_analyzer = PlayerPerformanceAnalyzer()
-            self.model_predictor = ModelPredictor()
+            self.model_predictor = EnhancedModelPredictor()
             self.strategy_engine = StrategyEngine()
             logging.info("Components initialized successfully.")
         except Exception as e:
@@ -240,10 +240,21 @@ class TeamSelector:
                     # Convert to numeric to avoid type issues
                     playing_df[col] = pd.to_numeric(playing_df[col], errors='coerce').fillna(0)
             
+            # Convert all numeric columns to ensure no string values remain
+            for col in playing_df.columns:
+                if col not in ['Player', 'Team', 'Player Role', 'Role', 'IsPlaying', 'Venue', 'Opposition', 'Home Team', 'Away Team']:
+                    playing_df[col] = pd.to_numeric(playing_df[col], errors='coerce').fillna(0)
+            
             # Train model predictor with historical data if available
             if not self.match_data.empty:
                 # Create target variable based on fantasy points
                 target_df = self.match_data.copy()
+                
+                # Convert all numeric columns to ensure no string values remain
+                for col in target_df.columns:
+                    if col not in ['Player', 'Team', 'Player Role', 'Venue', 'Opposition']:
+                        target_df[col] = pd.to_numeric(target_df[col], errors='coerce').fillna(0)
+                
                 target_df['Total_Points'] = calculate_total_points(target_df)
                 
                 # Train the model
@@ -262,8 +273,9 @@ class TeamSelector:
                     else:
                         playing_df['selection_score_scaled'] = 0.5  # Default if all scores are the same
                     
-                    # Combine Priority and ML score (Priority has higher weight - increased from 70% to 85%)
-                    playing_df['combined_score'] = (4 - playing_df['Priority']) * 0.85 + playing_df['selection_score_scaled'] * 0.15
+                    # Combine Priority and ML score (Priority weight reduced from 85% to 75%)
+                    priority_weight = self.model_predictor.get_priority_weight() if hasattr(self.model_predictor, 'get_priority_weight') else 0.75
+                    playing_df['combined_score'] = (4 - playing_df['Priority']) * priority_weight + playing_df['selection_score_scaled'] * (1 - priority_weight)
                 else:
                     # If ML prediction failed, use Priority only
                     playing_df['combined_score'] = 4 - playing_df['Priority']
@@ -294,6 +306,12 @@ class TeamSelector:
             if not self.match_data.empty:
                 # Create target variable based on fantasy points
                 target_df = self.match_data.copy()
+                
+                # Convert all numeric columns to ensure no string values remain
+                for col in target_df.columns:
+                    if col not in ['Player', 'Team', 'Player Role', 'Venue', 'Opposition']:
+                        target_df[col] = pd.to_numeric(target_df[col], errors='coerce').fillna(0)
+                
                 target_df['Total_Points'] = calculate_total_points(target_df)
                 
                 # Train the model
@@ -312,8 +330,9 @@ class TeamSelector:
                     else:
                         playing_df['selection_score_scaled'] = 0.5  # Default if all scores are the same
                     
-                    # Combine Priority and ML score (Priority has higher weight - increased from 70% to 85%)
-                    playing_df['combined_score'] = (4 - playing_df['Priority']) * 0.85 + playing_df['selection_score_scaled'] * 0.15
+                    # Combine Priority and ML score (Priority weight reduced from 85% to 75%)
+                    priority_weight = self.model_predictor.get_priority_weight() if hasattr(self.model_predictor, 'get_priority_weight') else 0.75
+                    playing_df['combined_score'] = (4 - playing_df['Priority']) * priority_weight + playing_df['selection_score_scaled'] * (1 - priority_weight)
                 else:
                     # If ML prediction failed, use Priority only
                     playing_df['combined_score'] = 4 - playing_df['Priority']
@@ -587,8 +606,7 @@ class TeamSelector:
                     output_team['C'] = False
                     output_team['VC'] = False
                     logging.error("No eligible players found for Captain and Vice-Captain roles")
-            # Log the summary (removed console print to avoid duplication)
-            # The summary will be printed from main.py instead
+            # Log the summary with a clean format for terminal display
             logging.info("\n[TEAM SELECTION SUMMARY]")
             logging.info(f"Team composition: {{'wk': {role_counts['wk']}, 'bat': {role_counts['bat']}, 'all': {role_counts['all']}, 'bowl': {role_counts['bowl']}}}")
             logging.info(f"Players from each team: {team_player_counts}")
