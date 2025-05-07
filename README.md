@@ -17,20 +17,32 @@ Please ensure to:
 Failing to update this file may result in predictions based on outdated squad information.
 
 ## Overview
-This project is developed as part of the Foundations of Machine Learning (FoML) course. The system leverages machine learning to predict optimal fantasy cricket teams for the Indian T20 League based on player statistics, match conditions, and historical performance data.
+This project is developed as part of the Foundations of Machine Learning (FoML) course. The system leverages advanced machine learning techniques and ensemble methods to predict optimal fantasy cricket teams for the Indian T20 League based on player statistics, match conditions, and historical performance data. The system now features enhanced algorithms, improved feature engineering, and a more balanced approach between ML predictions and expert knowledge.
 
 ## Technical Implementation
 
 ### Machine Learning Models
-- **XGBoost Regressor**
-  - Player performance prediction
-  - Feature importance analysis
-  - Historical data pattern recognition
+- **Enhanced Ensemble Approach**
+  - Multiple algorithms with weighted averaging based on cross-validation performance
+  - Automatic model selection and hyperparameter optimization
+  - Priority-based selection weight of 75%
 
-- **Ensemble Methods**
-  - Weighted averaging of predictions
-  - Cross-validation for model selection
-  - Hyperparameter optimization
+- **Core Algorithms**
+  - XGBoost Regressor - Gradient boosted decision trees for accurate predictions
+  - Random Forest Regressor - Robust ensemble of decision trees
+  - Gradient Boosting Regressor - Sequential tree building for error reduction
+  - AdaBoost Regressor - Adaptive boosting for focusing on difficult predictions
+  - ElasticNet - Linear regression with L1 and L2 regularization
+  - Support Vector Regression (SVR) - Non-linear regression with kernel methods
+  - Multi-layer Perceptron (MLP) - Neural network for complex pattern recognition
+  - TensorFlow Neural Network (optional) - Deep learning for advanced pattern recognition
+
+- **Advanced Feature Engineering**
+  - Role-specific performance metrics
+  - Form and consistency tracking
+  - Venue and opposition analysis
+  - Advanced batting and bowling efficiency metrics
+  - Boundary percentage and non-boundary strike rate calculations
 
 ### Fantasy Points Calculation System
 1. **Batting Points**
@@ -93,20 +105,31 @@ dream11-predictor/
 ```
 
 ## Features
-- **Data Processing Pipeline**
+- **Enhanced Data Processing Pipeline**
   - Automated data cleaning and standardization
-  - Feature engineering for player performance metrics
-  - Historical performance analysis
+  - Advanced feature engineering for player performance metrics
+  - Historical performance analysis with improved pattern recognition
+  - Intelligent handling of missing data and outliers
+  - Support for X-Factor substitutes in team selection
 
-- **Team Selection Strategy**
+- **Improved Team Selection Strategy**
   - Credit-based optimization (100 points limit)
-  - Role distribution:
+  - Balanced role distribution:
     - 1-2 Wicket-keepers (WK)
     - 3-5 Batsmen (BAT)
     - 3-5 Bowlers (BOWL)
     - 1-2 All-rounders (ALL)
-  - Captain (2x points) and Vice-Captain (1.5x points)
-  - Opposition analysis integration
+  - Intelligent Captain (2x points) and Vice-Captain (1.5x points) selection
+  - Opposition analysis integration with venue-specific performance metrics
+  - Priority-based selection (75%)
+  - Enhanced backup player selection logic
+
+- **Advanced Performance Analytics**
+  - Role-specific performance metrics
+  - Form and consistency tracking
+  - Venue and opposition-specific analysis
+  - Advanced batting metrics (boundary percentage, non-boundary strike rate)
+  - Advanced bowling metrics (bowling average, bowling strike rate, dot ball estimation)
 
 ## Datasets
 1. **MATCH_DATA_COMBINED_DATASET.xlsx**
@@ -155,12 +178,31 @@ python app/main.py
 The predicted team will be saved in `outputs/final_team_output.csv`
 
 ## Dependencies
-- pandas
-- numpy
-- scikit-learn
-- matplotlib
-- seaborn
-- jupyter
+- pandas - Data manipulation and analysis
+- numpy - Numerical computing
+- scikit-learn - Machine learning algorithms and utilities
+- matplotlib - Data visualization
+- seaborn - Statistical data visualization
+- jupyter - Interactive development
+- xgboost - Gradient boosting framework (optional)
+- tensorflow - Deep learning framework (optional)
+- catboost - Gradient boosting on decision trees (optional)
+- lightgbm - Gradient boosting framework (optional)
+
+## System Improvements
+
+### Enhanced Logging System
+- **Intelligent Log Filtering** - Custom ModuleFilter class to prioritize important messages
+- **Dual Output Channels** - Detailed logs to file for debugging, filtered logs to console for user experience
+- **Team Selection Summary** - Clearly formatted output of final team composition
+- **Error Handling** - Comprehensive error logging with appropriate verbosity levels
+- **Library Warning Suppression** - Filtering of non-essential warnings from TensorFlow and other libraries
+
+### Performance Optimizations
+- **Efficient Data Processing** - Improved data handling for faster team selection
+- **Reduced Redundancy** - Elimination of duplicate code in model training and prediction
+- **Memory Management** - Better handling of large datasets with proper indexing
+- **Exception Handling** - Robust error recovery with informative user feedback
 
 ## Acknowledgments
 This project was developed as part of the Foundations of Machine Learning (FoML) course project. Special thanks to the course instructors for their guidance and support throughout the development process.
